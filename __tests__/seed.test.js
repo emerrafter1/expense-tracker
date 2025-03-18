@@ -143,33 +143,121 @@ describe("seed", () => {
     });
 
     test("categories table has category_name column of varying character", () => {
-        return db
-          .query(
-            `SELECT column_name, data_type, column_default
+      return db
+        .query(
+          `SELECT column_name, data_type, column_default
                           FROM information_schema.columns
                           WHERE table_name = 'categories'
                           AND column_name = 'category_name';`
-          )
-          .then(({ rows: [column] }) => {
-            expect(column.column_name).toBe("category_name");
-            expect(column.data_type).toBe("character varying");
-          });
-      });
+        )
+        .then(({ rows: [column] }) => {
+          expect(column.column_name).toBe("category_name");
+          expect(column.data_type).toBe("character varying");
+        });
+    });
 
-  
-      test("categories table ensures category_name column has unique values", () => {
-        return db
-          .query(
-            `SELECT category_name, COUNT(*) 
+    test("categories table ensures category_name column has unique values", () => {
+      return db
+        .query(
+          `SELECT category_name, COUNT(*) 
                FROM categories 
                GROUP BY category_name 
                HAVING COUNT(*) > 1;`
-          )
-          .then(({ rows }) => {
-            expect(rows.length).toBe(0);
-          });
-      });
+        )
+        .then(({ rows }) => {
+          expect(rows.length).toBe(0);
+        });
+    });
   });
   //   describe("accounts table");
+
+  describe("accounts", () => {
+    test("accounts table exists", () => {
+      return db
+        .query(
+          `SELECT EXISTS (
+                          SELECT FROM 
+                              information_schema.tables 
+                          WHERE 
+                              table_name = 'accounts'
+                          );`
+        )
+        .then(({ rows: [{ exists }] }) => {
+          expect(exists).toBe(true);
+        });
+    });
+    test("accounts table has account_id column as a serial", () => {
+      return db
+        .query(
+          `SELECT column_name, data_type, column_default
+                          FROM information_schema.columns
+                          WHERE table_name = 'accounts'
+                          AND column_name = 'account_id';`
+        )
+        .then(({ rows: [column] }) => {
+          expect(column.column_name).toBe("account_id");
+          expect(column.data_type).toBe("integer");
+          expect(column.column_default).toBe(
+            "nextval('accounts_account_id_seq'::regclass)"
+          );
+        });
+    });
+    test("accounts table has account_id column as the primary key", () => {
+      return db
+        .query(
+          `SELECT column_name
+                        FROM information_schema.table_constraints AS tc
+                        JOIN information_schema.key_column_usage AS kcu
+                        ON tc.constraint_name = kcu.constraint_name
+                        WHERE tc.constraint_type = 'PRIMARY KEY'
+                        AND tc.table_name = 'accounts';`
+        )
+        .then(({ rows: [{ column_name }] }) => {
+          expect(column_name).toBe("account_id");
+        });
+    });
+
+    test("accounts table has user_id column as integer", () => {
+      return db
+        .query(
+          `SELECT column_name, data_type
+                            FROM information_schema.columns
+                            WHERE table_name = 'accounts'
+                            AND column_name = 'user_id';`
+        )
+        .then(({ rows: [column] }) => {
+          expect(column.column_name).toBe("user_id");
+          expect(column.data_type).toBe("integer");
+        });
+    });
+
+    test("accounts table has account_name column as varying character", () => {
+      return db
+        .query(
+          `SELECT column_name, data_type
+                          FROM information_schema.columns
+                          WHERE table_name = 'accounts'
+                          AND column_name = 'account_name';`
+        )
+        .then(({ rows: [column] }) => {
+          expect(column.column_name).toBe("account_name");
+          expect(column.data_type).toBe("character varying");
+        });
+    });
+
+    test("accounts table has created_at column as timestamp", () => {
+      return db
+        .query(
+          `SELECT column_name, data_type
+                            FROM information_schema.columns
+                            WHERE table_name = 'accounts'
+                            AND column_name = 'created_at';`
+        )
+        .then(({ rows: [column] }) => {
+          expect(column.column_name).toBe("created_at");
+          expect(column.data_type).toBe("timestamp without time zone");
+        });
+    });
+  });
   //   describe("expenses table");
 });
