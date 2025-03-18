@@ -1,5 +1,9 @@
+
+const db = require("../db/connection")
+
+
 describe("seed", () => {
-  describe.todo("users table", () => {
+  describe("users table", () => {
     test("users tables exists", () => {
       return db
         .query(
